@@ -63,7 +63,7 @@ class BullsEyeTests: XCTestCase {
     }
   
   func testScoreIsComputedWhenGuessIsHigherThanTarget() {
-    let guess = sut.targetValue - 5 // given
+    let guess = sut.targetValue + 5 // given
     sut.check(guess: guess) // when
     XCTAssertEqual(sut.scoreRound, 95, "Score computed from guess is wrong") // then
   }

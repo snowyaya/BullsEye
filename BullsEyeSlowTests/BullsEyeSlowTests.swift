@@ -30,12 +30,14 @@ import XCTest
 @testable import BullsEye
 
 var sut: URLSession!
+// NetworkMonitor sraps NWPathMonitor, providing a convenient way to check for a network connection
+let netWorkMonitor = NetworkMonitor.shared // Do conditional testing
 
 class BullsEyeSlowTests: XCTestCase {
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
-      try setUpWithError()
+      try super.setUpWithError()
       sut = URLSession(configuration: .default)
     }
 
@@ -78,16 +80,39 @@ class BullsEyeSlowTests: XCTestCase {
       } else if let statusCode = (response as? HTTPURLResponse)?.statusCode {
         if statusCode == 200 {
           // 2
-          promise.fulfill() // Call this in the success condition
+          promise.fulfill() // Call this in the success condition to flag the expectation has been met
         } else {
           XCTFail("Status code: \(statusCode)")
         }
       }
     }
     dataTask.resume()
-    // 3
+    // 3 Keep the test running until all tests end or timeout
     wait(for: [promise], timeout: 5)
   }
 
+  func testApiCallCompletes() throws {
+    // given
+    let urlString =
+    "http://www.randomnumberapi.com/api/v1.0/random?min=0&max=100&count=1"
+
+    let url = URL(string: urlString)!
+    let promise = expectation(description: "Completion handler invoked")
+    var statusCode: Int?
+    var responseError: Error?
+
+    // when
+    let dataTask = sut.dataTask(with: url) { _, response, error in
+      statusCode = (response as? HTTPURLResponse)?.statusCode
+      responseError = error
+      promise.fulfill()
+    }
+    dataTask.resume()
+    wait(for: [promise], timeout: 5)
+
+    // then
+    XCTAssertNil(responseError)
+    XCTAssertEqual(statusCode, 200)
+  }
 
 }

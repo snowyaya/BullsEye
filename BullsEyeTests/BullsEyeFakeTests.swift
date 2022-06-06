@@ -29,24 +29,19 @@
 import XCTest
 @testable import BullsEye
 
-
-class BullsEyeSlowTests: XCTestCase {
-    var sut: URLSession!
-    // NetworkMonitor sraps NWPathMonitor, providing a convenient way to check for a network connection
-    let networkMonitor = NetworkMonitor.shared // Do conditional testing
+class BullsEyeFakeTests: XCTestCase {
+    var sut: BullsEyeGame!
 
     override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
       try super.setUpWithError()
-      sut = URLSession(configuration: .default)
-
+      sut = BullsEyeGame()
     }
 
     override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
       sut = nil
       try super.tearDownWithError()
     }
+
 
     func testExample() throws {
         // This is an example of a functional test case.
@@ -58,66 +53,40 @@ class BullsEyeSlowTests: XCTestCase {
 
     func testPerformanceExample() throws {
         // This is an example of a performance test case.
-        measure {
+        self.measure {
             // Put the code you want to measure the time of here.
         }
     }
   
-  // Asynchronous test: success fast, failure slow
-  func testValidApiCallGetsHTTPStatusCode200() throws {
-    try XCTSkipUnless(
-      networkMonitor.isReachable,
-      "Network connectivity needed for this test.")
-    
+  func testStartNewRoundUsesRandomValueFromApiRequest() {
     // given
+    // 1
+    let stubbedData = "[1]".data(using: .utf8) // fake data
     let urlString =
       "http://www.randomnumberapi.com/api/v1.0/random?min=0&max=100&count=1"
     let url = URL(string: urlString)!
-    // 1
-    let promise = expectation(description: "Status code: 200")
+    // fake response
+    let stubbedResponse = HTTPURLResponse(
+      url: url,
+      statusCode: 200,
+      httpVersion: nil,
+      headerFields: nil)
+    let urlSessionStub = URLSessionStub(
+      data: stubbedData,
+      response: stubbedResponse,
+      error: nil)
+    sut.urlSession = urlSessionStub
+    let promise = expectation(description: "Value Received")
 
     // when
-    let dataTask = sut.dataTask(with: url) { _, response, error in
+    sut.startNewRound {
       // then
-      if let error = error {
-        XCTFail("Error: \(error.localizedDescription)")
-        return
-      } else if let statusCode = (response as? HTTPURLResponse)?.statusCode {
-        if statusCode == 200 {
-          // 2
-          promise.fulfill() // Call this in the success condition to flag the expectation has been met
-        } else {
-          XCTFail("Status code: \(statusCode)")
-        }
-      }
-    }
-    dataTask.resume()
-    // 3 Keep the test running until all tests end or timeout
-    wait(for: [promise], timeout: 5)
-  }
-
-  func testApiCallCompletes() throws {
-    // given
-    let urlString =
-    "http://www.randomnumberapi.com/api/v1.0/random?min=0&max=100&count=1"
-
-    let url = URL(string: urlString)!
-    let promise = expectation(description: "Completion handler invoked")
-    var statusCode: Int?
-    var responseError: Error?
-
-    // when
-    let dataTask = sut.dataTask(with: url) { _, response, error in
-      statusCode = (response as? HTTPURLResponse)?.statusCode
-      responseError = error
+      // 2
+      XCTAssertEqual(self.sut.targetValue, 1)
       promise.fulfill()
     }
-    dataTask.resume()
     wait(for: [promise], timeout: 5)
-
-    // then
-    XCTAssertNil(responseError)
-    XCTAssertEqual(statusCode, 200)
   }
+
 
 }

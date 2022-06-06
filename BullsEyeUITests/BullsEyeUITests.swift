@@ -27,57 +27,30 @@
 /// THE SOFTWARE.
 
 import XCTest
-@testable import BullsEye
 
-class BullsEyeTests: XCTestCase {
-    // sut: System under Test
-    var sut: BullsEyeGame! // creates a placeholder for BullsEyeGame
+class BullsEyeUITests: XCTestCase {
+  var app: XCUIApplication!
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
-      try super.setUpWithError()
-      sut = BullsEyeGame() // creates BullsEyeGame at the class level
+
+        // In UI tests it is usually best to stop immediately when a failure occurs.
+//        continueAfterFailure = false
+
+        // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
+        try super.setUpWithError()
+        continueAfterFailure = false
+        app = XCUIApplication()
+        app.launch()
     }
 
     override func tearDownWithError() throws {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
-      // release SUT object here
-      sut = nil
-      try super.tearDownWithError()
-    }
-
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
-    }
-
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        measure {
-            // Put the code you want to measure the time of here.
-        }
     }
   
-  func testScoreIsComputedWhenGuessIsHigherThanTarget() {
-    let guess = sut.targetValue + 5 // given
-    sut.check(guess: guess) // when
-    XCTAssertEqual(sut.scoreRound, 95, "Score computed from guess is wrong") // then
-  }
-  
-  func testScoreIsComputedPerformance() {
-    measure(
-      metrics: [
-        XCTClockMetric(),
-        XCTCPUMetric(),
-        XCTStorageMetric(),
-        XCTMemoryMetric()
-      ]
-    ) {
-      sut.check(guess: 100)
+    func testGameStyleSwitch() {
+      
+
     }
-  }
 
 }
